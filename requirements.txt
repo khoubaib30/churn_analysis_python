@@ -1,0 +1,13 @@
+pandas
+numpy
+matplotlib
+seaborn
+scikit-learn
+joblib
+nbformat
+fastapi
+uvicorn[standard]
+pydantic
+httpx
+ipykernel
+imbalanced-learn
