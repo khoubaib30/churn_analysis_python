@@ -8,10 +8,48 @@ Projet complet d'analyse du churn client avec :
 - API locale avec FastAPI
 - interface web locale avec React
 
+## Problème et résultats
+
+**Objectif :** identifier les clients d'un opérateur télécom qui risquent de résilier leur abonnement, pour prioriser les actions de rétention.
+
+**Données :** dataset public [IBM Telco Customer Churn](https://www.kaggle.com/datasets/blastchar/telco-customer-churn) : 7 043 clients, 21 variables (contrat, ancienneté, services, facturation), 26,5 % de churn.
+
+**Principaux constats de l'analyse exploratoire :**
+
+- 43 % de churn sur les contrats mensuels, contre 11 % sur un an et 3 % sur deux ans ;
+- le risque est le plus élevé la première année d'ancienneté (47 % de churn).
+
+**Modèles** (découpage 80/20 stratifié, SMOTE appliqué uniquement au jeu d'entraînement, dans le pipeline) :
+
+| Modèle | ROC-AUC | Rappel | Précision | F1 |
+|---|---|---|---|---|
+| Régression logistique (interprétation des facteurs) | 0,84 | 79 % | 50 % | 0,62 |
+| **Random Forest (modèle retenu)** | **0,84** | **72 %** | **54 %** | **0,62** |
+
+La Random Forest est retenue pour sa meilleure précision (moins de fausses alertes pour l'équipe rétention) ; la régression logistique sert à expliquer les facteurs de départ.
+
+**Impact métier : ciblage des clients à risque**
+
+En classant les clients du jeu de test selon le score de risque du modèle :
+
+| Clients ciblés (score le plus élevé) | Part des départs captés | Taux de churn dans le groupe |
+|---|---|---|
+| 10 % | 28 % | 74 % |
+| **20 %** | **51 %** | **67 %** |
+| 30 % | 64 % | 56 % |
+
+**En ciblant seulement 20 % des clients, on touche la moitié des départs**, soit environ 2,5 fois mieux qu'un ciblage au hasard.
+
+Pour reproduire ce calcul :
+
+```bash
+python machine_learning/churn_targeting_lift.py
+```
+
 ## Structure du projet
 
 ```text
-projet_pythonn/
+churn_analysis_python/
 ├── analyse/
 │   ├── 01_data_cleaning_eda.ipynb
 │   └── 02_modeling_churn_prediction.ipynb
@@ -25,6 +63,7 @@ projet_pythonn/
 ├── machine_learning/
 │   ├── figures/
 │   ├── models/
+│   ├── churn_targeting_lift.py
 │   ├── logistic_regression_coefficients.csv
 │   └── random_forest_feature_importance.csv
 ├── visualisation/
@@ -47,14 +86,14 @@ Avant de commencer, verifier que vous avez installe :
 Depuis la racine du projet :
 
 ```powershell
-cd C:\Users\bourbia\Desktop\projet_pythonn
+cd churn_analysis_python
 pip install -r requirements.txt
 ```
 
 ## 2. Installer les dependances frontend
 
 ```powershell
-cd C:\Users\bourbia\Desktop\projet_pythonn\frontend
+cd churn_analysis_python/frontend
 npm install
 ```
 
@@ -63,7 +102,7 @@ npm install
 Depuis la racine du projet :
 
 ```powershell
-cd C:\Users\bourbia\Desktop\projet_pythonn
+cd churn_analysis_python
 jupyter notebook
 ```
 
@@ -162,7 +201,7 @@ Si `data/cleaned_dataset.csv` existe deja :
 Depuis la racine du projet :
 
 ```powershell
-cd C:\Users\bourbia\Desktop\projet_pythonn
+cd churn_analysis_python
 uvicorn backend.main:app --reload
 ```
 
@@ -182,7 +221,7 @@ Le backend :
 Dans un second terminal :
 
 ```powershell
-cd C:\Users\bourbia\Desktop\projet_pythonn\frontend
+cd churn_analysis_python/frontend
 npm run dev
 ```
 
@@ -209,7 +248,7 @@ Si vous partez de zero :
 ### Installation
 
 ```powershell
-cd C:\Users\bourbia\Desktop\projet_pythonn
+cd churn_analysis_python
 pip install -r requirements.txt
 cd frontend
 npm install
@@ -218,21 +257,21 @@ npm install
 ### Jupyter
 
 ```powershell
-cd C:\Users\bourbia\Desktop\projet_pythonn
+cd churn_analysis_python
 jupyter notebook
 ```
 
 ### Backend
 
 ```powershell
-cd C:\Users\bourbia\Desktop\projet_pythonn
+cd churn_analysis_python
 uvicorn backend.main:app --reload
 ```
 
 ### Frontend
 
 ```powershell
-cd C:\Users\bourbia\Desktop\projet_pythonn\frontend
+cd churn_analysis_python/frontend
 npm run dev
 ```
 
